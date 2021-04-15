@@ -1,0 +1,41 @@
+{
+  "name": "gj-locate",
+  "displayName": "gj::locate",
+  "description": "Go to Location",
+  "version": "0.0.2",
+  "publisher": "georgejames",
+  "engines": {
+    "vscode": "^1.23.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/main",
+  "contributes": {
+    "commands": [
+      {
+        "command": "gjLocate",
+        "title": "gj::locate - Go to Location"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.7",
+    "vscode-test": "^1.5.1",
+    "@types/node": "^14.0.1",
+    "@types/mocha": "^2.2.42",
+    "vsce": "^1.87.1"
+  },
+  "dependencies": {
+    "@types/vscode": "^1.54.0"
+  }
+}
