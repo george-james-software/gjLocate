@@ -2,11 +2,15 @@
   "name": "gj-locate",
   "displayName": "gj::locate",
   "description": "Go to Location",
-  "version": "0.0.2",
+  "version": "0.9.0",
   "publisher": "georgejames",
+  "homepage": "https://github.com/george-james-software/gjLocate/README.md",
+  "bugs": "https://github.com/george-james-software/gjLocate/issues",
+  "license": "GPL-3.0-or-later",
   "engines": {
     "vscode": "^1.23.0"
   },
+  "repository": {"type": "git", "url": "https://github.com/george-james-software/gjLocate.git"},
   "categories": [
     "Other"
   ],

@@ -31,11 +31,13 @@ export async function getCode(fileName, extension) {
 export function getFileUri(fileName:string, extension:string):vscode.Uri {
 
     const workspaceUri = vscode.workspace.workspaceFolders[0].uri
-    const serenji = (workspaceUri.scheme === 'serenji')
+    const scheme = workspaceUri.scheme
 
     let fileUri:vscode.Uri
-    if (serenji) fileUri = workspaceUri.with({path: workspaceUri.path + '/' + fileName + '.' + extension})
-    else fileUri = vscode.Uri.file(workspaceUri.path + '/src/' + fileName + '.' + extension)
+    if (scheme === 'serenji') fileUri = workspaceUri.with({path: workspaceUri.path + '/' + fileName + '.' + extension})
+    else if (scheme === 'isfs') fileUri = workspaceUri.with({path: workspaceUri.path + fileName + '.' + extension})
+    else if (scheme === 'isfs-readonly') fileUri = workspaceUri.with({path: workspaceUri.path + fileName + '.' + extension})
+    else fileUri = workspaceUri.with({path: workspaceUri.path + '/src/' + fileName + '.' + extension})
 
     return fileUri
 }

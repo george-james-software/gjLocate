@@ -38,7 +38,7 @@ import { getOffset } from './offset'
 // Inline code in .INC files (eg LDAP.mac includes %syLDAPfunc.inc)
 // 
 
-// If label not found in a class then check it's superclasses!
+// If label not found in a class then check its superclasses!
 // Locate class declaration and get list of superclasses
 
 
@@ -48,13 +48,17 @@ export function register(context: vscode.ExtensionContext) {
     
     let gjLocate = vscode.commands.registerCommand('gjLocate', async () => {
 
+        // If there are no workspaces open then do nothing
+        if (!vscode.workspace.workspaceFolders) return
+
         // The workspace root uri
         // For a multi-rooted workspace assume first root
         const workspaceUri = vscode.workspace.workspaceFolders[0].uri
 
-        // Is this a serenji workspace or a vscode-objectscript workspace
-        const serenji = (workspaceUri.scheme === 'serenji')
+        // Get the worspace scheme.  It may be serenji, isfs, isfs-readonly or file
+        const scheme = workspaceUri.scheme
 
+    
         // Read from clipboard
         const clipboard = await vscode.env.clipboard.readText()
 
@@ -66,7 +70,7 @@ export function register(context: vscode.ExtensionContext) {
         let userInput = defaultValue
         if (!auto) {
             userInput = await vscode.window.showInputBox({
-                prompt: 'Enter label+offset^routine to go to it\'s source location', 
+                prompt: 'Enter method+offset^Package.Class or label+offset^routine to go to the source', 
                 placeHolder: '',
                 ignoreFocusOut: true,
                 value: defaultValue
@@ -84,6 +88,13 @@ export function register(context: vscode.ExtensionContext) {
         // Default to current filename if no routine or classname provided in entryref)
         if ((entryref.routine === '') && (entryref.className === '')) {
             if (vscode.window.activeTextEditor) {
+
+                // Focus is sometimes in an output panel
+                if (vscode.window.activeTextEditor.document.uri.scheme === 'output') {
+                    vscode.window.showErrorMessage('Please set focus to a file or document')
+                    return
+                }            
+
                 const path = vscode.window.activeTextEditor.document.uri.path
 
                 // If path is part of this workspace root
@@ -91,11 +102,14 @@ export function register(context: vscode.ExtensionContext) {
                 if (pathArray[1] !== undefined) { 
                     
                     let fileName
-                    if (serenji) fileName = removePrefix(pathArray[1], '/') 
+                    if (scheme === 'serenji') fileName = removePrefix(pathArray[1], '/') 
+                    else if (scheme === 'isfs') fileName = pathArray[1]
+                    else if (scheme === 'isfs-readonly') fileName = pathArray[1]
                     else fileName = removePrefix(pathArray[1], '/src/')
-                    
-                    const prefix = fileName.split('.')[0]
-                    const extension = fileName.split('.')[1]
+
+                    let fileNameArray = fileName.split('.')
+                    const extension = fileNameArray.pop()
+                    const prefix = fileNameArray.join('.')
                     if (extension === 'cls') {
                         entryref.className = prefix
 
@@ -204,7 +218,7 @@ export function register(context: vscode.ExtensionContext) {
 
         // Go to line in file
         let header = 0
-        if (!serenji) {
+        if (scheme !== 'serenji') {
             if (extension === 'mac') header = 1
             if (extension === 'int') header = 1
             if (extension === 'inc') header = 1
