@@ -6,6 +6,10 @@ Using VS Code with either the Serenji extension or the basic InterSystems object
 
 ## Features
 
+[![](https://img.shields.io/badge/InterSystems-IRIS-blue.svg)](https://www.intersystems.com/products/intersystems-iris/)
+[![](https://img.shields.io/badge/InterSystems-Caché-blue.svg)](https://www.intersystems.com/products/cache/)
+[![](https://img.shields.io/badge/InterSystems-Ensemble-blue.svg)](https://www.intersystems.com/products/ensemble/)
+
 ### Debugging 101
 The first step in debugging any error is to make sure you are looking at the correct line of code.  Error messages give the error location in the compiled .int code, not in your source code.  There are many special rules about how lines of source code map to corresponding lines in the compiled .int routines and you probably don't know them all.  Locating the correct source line for an error is an essential first step in debugging any problem.
 
@@ -38,7 +42,7 @@ You can specify a location using any of these formats to get quickly and directl
 
 You can, optionally, install the gj :: locate userscript in your browser (you'll need the Tampermonkey browser extension to do this). Then you can navigate seamlessly from an error message in the Management Portal Application Error Log to the source code in just two clicks. Like this:
 
-![Using gj::locate](images/demo1.gif)
+![Using gj::locate](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/demo1.gif)
 
 ## Requirements
 
@@ -99,7 +103,7 @@ It's 2:30am and you've just been woken up to fix a mission critical problem in y
 First you have to know a few things.  You have to know that when a routine ends with .1 it means that this is a class, not a routine.  So now you go open up Greek.Alphabet.cls.
 
 
-![Greek.Alphabet.cls](images/Greek.Alphabet.png)
+![Greek.Alphabet.cls](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/Greek.Alphabet.png)
 
 
 Yes, the error message says the problem is in the Greek.Alphabet class, but as you can see, it's empty.
@@ -107,7 +111,7 @@ Yes, the error message says the problem is in the Greek.Alphabet class, but as y
 Closer inspection reveals that the source code must have come from one of the superclasses.  Greek.Zeta.cls would be a good guess.  Let's look in there.
 
 
-![Greek.Zeta.cls](images/Greek.Zeta.png)
+![Greek.Zeta.cls](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/Greek.Zeta.png)
 
 
 Well, here we are.  It's obviously line 10 which is zeta+5.  But hang on, the error message was `<UNDEFINED>` and the undefined variable is characterCount.  How can that possibly be?  characterCount is clearly being set on the previous line.  This error is impossible!
@@ -119,7 +123,7 @@ Then you remember! Methods are given a z prefix when compiled into an .int routi
 Let's look at Greek.Eta.cls
 
 
-![Greek.Eta.cls](images/Greek.Eta.png)
+![Greek.Eta.cls](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/Greek.Eta.png)
 
 
 Hmm.  It's nearly identical to Greek.Zeta.cls and characterCount has clearly been initialised on the previous line.  What's going on?  At this point you just want to go back to bed.
@@ -127,7 +131,7 @@ Hmm.  It's nearly identical to Greek.Zeta.cls and characterCount has clearly bee
 More head scratching. Perhaps the problem is something to do with that #include line.  Let's look in there.
 
 
-![Greek.Utils.inc](images/Greek.Utils.png)
+![Greek.Utils.inc](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/Greek.Utils.png)
 
 
 Line 5 looks promising.  But... oh no, characterCount can't be undefined here.  It's impossible.
@@ -135,7 +139,7 @@ Line 5 looks promising.  But... oh no, characterCount can't be undefined here.  
 So, eventually, after scolling down 20 or so lines you find some more code:
 
 
-![Greek.Utils.inc line 20](images/Greek.Utils_2.png)
+![Greek.Utils.inc line 20](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/Greek.Utils_2.png)
 
 
 Now we know why characterCount is undefined, and fortunately it looks like an easy fix.
@@ -145,7 +149,7 @@ The real error is at line 25 of Greek.Utils.inc.  This is a somewhat contrived e
 So finally, here's how you'd do it with gj :: locate
 
 
-![Using gj::locate](images/demo2.gif)
+![Using gj::locate](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/demo2.gif)
 
 
 
