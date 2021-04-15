@@ -1,3 +1,8 @@
+[![](https://img.shields.io/badge/InterSystems-IRIS-blue.svg)](https://www.intersystems.com/products/intersystems-iris/)
+[![](https://img.shields.io/badge/InterSystems-Ensemble-blue.svg)](https://www.intersystems.com/products/ensemble/)
+[![](https://img.shields.io/badge/InterSystems-Caché-blue.svg)](https://www.intersystems.com/products/cache/)
+
+
 # gj :: locate
 
 Use gj :: locate to get to the source of your errors.
@@ -5,10 +10,6 @@ Use gj :: locate to get to the source of your errors.
 Using VS Code with either the Serenji extension or the basic InterSystems objectscript extension, click on the gj :: locate caption in the status bar, enter an objectscript error message or a line reference from an .int routine.  gj :: locate will take you the corresponding line in your source code.
 
 ## Features
-
-[![](https://img.shields.io/badge/InterSystems-IRIS-blue.svg)](https://www.intersystems.com/products/intersystems-iris/)
-[![](https://img.shields.io/badge/InterSystems-Caché-blue.svg)](https://www.intersystems.com/products/cache/)
-[![](https://img.shields.io/badge/InterSystems-Ensemble-blue.svg)](https://www.intersystems.com/products/ensemble/)
 
 ### Debugging 101
 The first step in debugging any error is to make sure you are looking at the correct line of code.  Error messages give the error location in the compiled .int code, not in your source code.  There are many special rules about how lines of source code map to corresponding lines in the compiled .int routines and you probably don't know them all.  Locating the correct source line for an error is an essential first step in debugging any problem.
