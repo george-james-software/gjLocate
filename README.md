@@ -7,18 +7,18 @@
 
 Use gj&nbsp;::&nbsp;locate to get to the source of your errors.
 
-Using VS Code, with either the Serenji extension or the basic InterSystems objectscript extension, click on the gj&nbsp;::&nbsp;locate caption in the status bar. &nbsp;Enter an objectscript error message or a line reference from an .int routine. &nbsp;Then gj&nbsp;::&nbsp;locate will take you directly to the corresponding line in your source code.
+Using VS Code, with either the Serenji extension or the basic InterSystems objectscript extension, click on the gj&nbsp;::&nbsp;locate caption in the status bar. &nbsp;Enter an objectscript error message or a line reference from a class or .mac routine. &nbsp;Then gj&nbsp;::&nbsp;locate will take you directly to the corresponding line in your source code.
 
 ## Features
 
 ### Debugging 101
-The first step in debugging any error is to make sure you are looking at the correct line of code. &nbsp;Error messages give the error location in the compiled .int code, not in your source code. &nbsp;There are many special rules about how lines of source code map to corresponding lines in the compiled .int routines and most people don't know them all. &nbsp;Locating the correct source line for an error is an essential first step in debugging any problem.
+The first step in debugging any error is to make sure you are looking at the correct line of code. &nbsp;Error messages give the error location in terms of the compiled .int code, not your source code. &nbsp;There are many special rules about how lines of source code map to corresponding lines in the compiled .int routines and most people don't know them all. &nbsp;Locating the correct source line for an error is an essential first step in debugging any problem. &nbsp;gj&nbsp;::&nbsp;locate solves this problem by converting the location of an error in compiled .int code to the corresponding location in your source, and then taking you there.
 
 Simply copy and paste any InterSystems IRIS error message into gj&nbsp;::&nbsp;locate and it will take you directly to the corresponding source line.
 
 ### But wait, there's more!
 
-You can use gj&nbsp;::&nbsp;locate to open any class or routine and go straight to the line you want. &nbsp;For example you can enter alpha^Greek.Alphabet to go to the alpha method in Greek.Alphabet.cls.
+It doesn't just work with error messages. &nbsp;You can use gj&nbsp;::&nbsp;locate to open any class or routine and go straight to the line you want. &nbsp;For example, you can enter alpha^Greek.Alphabet to go to the alpha method in Greek.Alphabet.cls.
 
 You can specify a location using any of these formats to get quickly and directly to where you want to be:
  * Package.Class
@@ -72,23 +72,6 @@ If you install the gj&nbsp;::&nbsp;locate userscript in your browser, you will b
 2. Install the gj&nbsp;::&nbsp;locate userscript by clicking the **Install This Script** button on [this page](https://greasyfork.org/en/scripts/424973-gj-locate).
 
 3. Navigate to the Application Error Log page in any InterSystems Management Portal. &nbsp;You'll see an additional gj&nbsp;::&nbsp;locate button against each error log entry. &nbsp;Click it.
-
-
-## Known Limitations and Issues
-
- * If you have a multi-root workspace then gj&nbsp;::&nbsp;locate will only operate on the first folder. &nbsp;You can drag a folder to change its order and make it the first one in your workspace if you need to.
- * If you are using Serenji, gj&nbsp;::&nbsp;locate will only operate on Serenji folders that contain a single namespace. &nbsp;If you have a multi-namespace connection, you can add an additional single namespace connection and make it the first folder in your workspace. 
-
-The source location is determined using an empirical method. This approach has a number of limitations that are unlikely to be encountered in most normal cases. &nbsp;If however, you are doing something exotic, the results may be affected. &nbsp;Generally, using the Serenji extension instead of the basic InterSystems Objectscript extension will give better results because it is able to access source code that has not been downloaded to the client. 
-
- * Macro #if directives are ignored. &nbsp; Any code lines within and after a #if block may be incorrect
- * $$$ macros that resolve to multiple lines are not accounted for. &nbsp;Most $$$ macros resolve to a line fragment which will be handled correctly. &nbsp;Multiline macros are not common.
- * Method code containing a line comprising just } would be mis-identified as the end of a method block.
- * Lines that contain the terminating > of a &js<> block and have code or comments following the > are not handled correctly
- * Generator methods can result in an unknown number of lines of code. &nbsp;gj&nbsp;::&nbsp;locate will navigate to the method but not to a specific line within a generator method.
- * htmlMarkers (eg &htmlABC< ... >CBA ) are not recognised as &html<> blocks and not treated correctly.
- * ##sql( ... ) as an alternative to &sql( ... ) is not recognised
- * The specific sql construct &sql( /* in-line comment */ ) is not handled correctly
 
 
 ### Why?
@@ -153,6 +136,23 @@ So finally, here's how you'd do it with gj&nbsp;::&nbsp;locate
 
 ![Using gj::locate](https://raw.githubusercontent.com/george-james-software/gjLocate/master/images/demo2.gif)
 
+
+
+## Known Limitations and Issues
+
+ * If you have a multi-root workspace then gj&nbsp;::&nbsp;locate will only operate on the first folder. &nbsp;You can drag a folder to change its order and make it the first one in your workspace if you need to.
+ * If you are using Serenji, gj&nbsp;::&nbsp;locate will only operate on Serenji folders that contain a single namespace. &nbsp;If you have a multi-namespace connection, you can add an additional single namespace connection and make it the first folder in your workspace. 
+
+The source location is determined using an empirical method. This approach has a number of limitations that are unlikely to be encountered in most normal cases. &nbsp;If however, you are doing something exotic, the results may be affected. &nbsp;Generally, using the Serenji extension instead of the basic InterSystems Objectscript extension will give better results because it is able to access source code that has not been downloaded to the client. 
+
+ * Macro #if directives are ignored. &nbsp; Any code lines within and after a #if block may be incorrect
+ * $$$ macros that resolve to multiple lines are not accounted for. &nbsp;Most $$$ macros resolve to a line fragment which will be handled correctly. &nbsp;Multiline macros are not common.
+ * Method code containing a line comprising just } would be mis-identified as the end of a method block.
+ * Lines that contain the terminating > of a &js<> block and have code or comments following the > are not handled correctly
+ * Generator methods can result in an unknown number of lines of code. &nbsp;gj&nbsp;::&nbsp;locate will navigate to the method but not to a specific line within a generator method.
+ * htmlMarkers (eg &htmlABC< ... >CBA ) are not recognised as &html<> blocks and not treated correctly.
+ * ##sql( ... ) as an alternative to &sql( ... ) is not recognised
+ * The specific sql construct &sql( /* in-line comment */ ) is not handled correctly
 
 
 ## Release Notes

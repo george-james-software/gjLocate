@@ -1,8 +1,8 @@
 {
   "name": "gj-locate",
   "displayName": "gj :: locate",
-  "description": "Go to Location",
-  "version": "0.9.2",
+  "description": "Go to InterSystems source code location",
+  "version": "1.0.0",
   "publisher": "georgejames",
   "homepage": "https://github.com/george-james-software/gjLocate/README.md",
   "bugs": "https://github.com/george-james-software/gjLocate/issues",
@@ -10,7 +10,7 @@
   "engines": {
     "vscode": "^1.54.0"
   },
-  "icon": "images/gjColonColon.png",
+  "icon": "images/GeorgeJamesSoftwareLogo.1.gif",
   "repository": {"type": "git", "url": "https://github.com/george-james-software/gjLocate.git"},
   "categories": [
     "Other"
