@@ -1,8 +1,8 @@
 {
-  "name": "gj-locate",
+  "name": "gjlocate",
   "displayName": "gj :: locate",
   "description": "Go to InterSystems source code location",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "georgejames",
   "homepage": "https://github.com/george-james-software/gjLocate/README.md",
   "bugs": "https://github.com/george-james-software/gjLocate/issues",

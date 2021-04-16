@@ -55,7 +55,7 @@ This extension requires either the Serenji extension or the basic InterSystems O
 
 ## Installation
 
-1. To install the gj&nbsp;::&nbsp;locate VS Code extension, go to the Extensions view (⌘/Ctrl+Shift+X), search for "gjLocate" and click the install button.
+1. To install the gj&nbsp;::&nbsp;locate VS Code extension, go to the Extensions view (⌘/Ctrl+Shift+X), search for "gjlocate" and click the install button.
 
 2. Once installed a gj&nbsp;::&nbsp;locate caption will appear on the status bar. &nbsp;Click it to invoke gj&nbsp;::&nbsp;locate. 
 
