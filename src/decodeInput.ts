@@ -98,7 +98,7 @@ function decodeEntryReference(userInput:string) {
 
     }
     else {
-        entryref.routine = routine
+        entryref.routine = routine.replace('.', '/')
         entryref.label = label
     }
     

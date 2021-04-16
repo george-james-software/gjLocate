@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"name": "Serenji: orc.iris1812 AVIATION",
+			"uri": "serenji://orc.iris1812/AVIATION"
+		}
+	],
+	"settings": {
+		"git.enabled": false,
+		"objectscript.conn": {
+			"active": false
+		}
+	}
+}
