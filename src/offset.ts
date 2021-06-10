@@ -22,22 +22,22 @@ const isCloseCursor = /&sql\(\s*close/i
  * Get the offset in a file from a position specified in labelLocationList
  * Returns [fileName, extension, startLine, endLine, error]
  */
-export async function getOffset(labelLocationList, offset) {
+export async function getOffset(workspaceFolderId, labelLocationList, offset) {
  
     const location = labelLocationList[0]
     const fileName = location.fileName
     const extension = location.extension
 
-    if (extension === 'cls') return (await getOffsetObjectScript(labelLocationList, offset))
-    else if (extension === 'mac') return (await getOffsetObjectScript(labelLocationList, offset))
-    else if (extension === 'inc') return (await getOffsetObjectScript(labelLocationList, offset))
-    else if (extension === 'int') return (await getOffsetInt(labelLocationList, offset))
+    if (extension === 'cls') return (await getOffsetObjectScript(workspaceFolderId, labelLocationList, offset))
+    else if (extension === 'mac') return (await getOffsetObjectScript(workspaceFolderId, labelLocationList, offset))
+    else if (extension === 'inc') return (await getOffsetObjectScript(workspaceFolderId, labelLocationList, offset))
+    else if (extension === 'int') return (await getOffsetInt(workspaceFolderId, labelLocationList, offset))
 
     return [fileName, extension, 0, 0, 'Extension not recognized']
 }
 
 
-async function getOffsetObjectScript(labelLocationList, targetOffset) {
+async function getOffsetObjectScript(workspaceFolderId, labelLocationList, targetOffset) {
 
     const location = labelLocationList.shift() // remove current location from list
     const startLine = location.sourceLine
@@ -45,7 +45,7 @@ async function getOffsetObjectScript(labelLocationList, targetOffset) {
     let extension = location.extension
 
     // Open and read the file
-    let code = await getCode(fileName, extension)
+    let code = await getCode(workspaceFolderId, fileName, extension)
     if (!code.length) return [fileName, extension, 0, 0, 'File not found']
 
     let inSQL:boolean = false
@@ -166,7 +166,7 @@ async function getOffsetObjectScript(labelLocationList, targetOffset) {
         if (isHashInclude.test(line)) {
             const includeFile = line.match(isHashInclude)[1].replace(/\./g, '/')
 
-            const includeCode = await getCode(includeFile, 'inc')
+            const includeCode = await getCode(workspaceFolderId, includeFile, 'inc')
             if (!includeCode.length) continue
 
             // Stack current location in the label location list (resume on the next line)
@@ -203,169 +203,21 @@ async function getOffsetObjectScript(labelLocationList, targetOffset) {
     if (labelLocationList.length === 0) return [fileName, extension, 0, 0, 'Line not found']
 
     // Continue processing includer
-    const result = await getOffsetObjectScript(labelLocationList, targetOffset - offset - 1)
+    const result = await getOffsetObjectScript(workspaceFolderId, labelLocationList, targetOffset - offset - 1)
     return result
 
 }
 
 
-async function xxxgetOffsetMac(code, labelLocationList, offset) {
-
-    let startLine = labelLocationList[0].sourceLine
-    let fileName = labelLocationList[0].fileName
-    let extension = labelLocationList[0].extension
-    labelLocationList.shift() // remove current location from list
-
-    let inSQL:boolean = false
-    let labelOffset:number = -1
-    let sourceLine:number = 1
-
-    const js = new block(/^\s*&js</i, '<', '>')
-    const jscript= new block(/^\s*&jscript</i, '<', '>')
-    const javascript = new block(/^\s*&javascript</i, '<', '>')
-    const html = new block(/^\s*&html</i, '<', '>')
-    const sql = new block(/&sql\(/i, '(', ')')
-
-    const includeSearch = /^\s*#include\s+(%?(\w|\.)+)/i
-    const isComment = /^\s*(;|\/\/)/
-    const isHashHashContinue = /##continue/
-    let continuationLine = false
-
-    // Zero offset, we're there already
-    if (offset === 0) return [fileName, extension, startLine, startLine, '', 0]
-
-    // It is possible for blocks (sql, js, html) to start on the same line as the label
-    // so we start on the label line, not the line after
-    for (sourceLine = startLine; sourceLine <code.length; sourceLine++) {
-        const line = code[sourceLine]
-
-        // Skip macro continuation lines
-        if (continuationLine) {
-            if (isHashHashContinue.test(line)) continue
-            continuationLine = false
-            continue
-        }
-
-        // All js lines are included verbatim
-        if (js.check(line, sourceLine)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-            continue
-        }
-        if (jscript.check(line, sourceLine)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-            continue
-        }
-        if (javascript.check(line, sourceLine)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-            continue
-        }
-
-        // All html lines are included verbatim
-        if (html.check(line, sourceLine)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-            continue
-        }
-
-        // Special case: an empty &sql() results in a single line of /*  */
-        if (/&sql\(\s*\)/i.test(line)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-            continue        
-        }
-
-        // All sql lines are included verbatim
-        inSQL = sql.inBlock
-        if (sql.check(line, sourceLine)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-            continue
-        }
-        if (sql.isBlock) inSQL = true
-
-        // At end of sql block
-        if (inSQL && (!sql.inBlock)) {
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-
-            // int contains extra line, something like ;--- ** SQL PUBLIC Variables: %ROWCOUNT, %ROWID, %msg, SQLCODE
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sql.startLine, sql.endLine, '']
-
-            // int contains extra line, typically do %0Ao
-            labelOffset++
-            if (labelOffset === offset) return [fileName, extension, sql.startLine, sql.endLine, '']
-
-            continue
-        }
-
-        // If source line is blank then skip it
-        if (/^\s*$/.test(line)) continue
-
-        // if we are in an inc then comment lines are skipped
-        if ((extension=== 'inc') && (isComment.test(line))) continue
-
-        // treat #include lines as if they were in-line here
-        if (includeSearch.test(line)) {
-            const includeFile = line.match(includeSearch)[1]
-            code = await getCode(includeFile, 'inc')
-            if (!code.length) continue // TODO: If inc code is missing then ought to warn user
-
-            // Stack current location in the label location list
-            const location = {sourceLine:sourceLine, fileName: fileName, extension: extension}
-            labelLocationList = [location, ...labelLocationList]
-
-            // Continue by processing the include file from the beginning
-            fileName = includeFile
-            extension = 'inc'
-            sourceLine = 0
-            continue    
-        }
-
-        // Skip macro compiler directives (any line starting with #)
-        if (/^\s*#/.test(line)) {
-            
-            // If a macro line also contains ##continue then skip the next line as well
-            if (isHashHashContinue.test(line)) continuationLine = true
-
-            continue
-        }
-
-        // This line will have made it into the int code
-        labelOffset++
-        if (labelOffset === offset) return [fileName, extension, sourceLine, sourceLine, '']
-
-    }
-
-    // Location not found
-    if (labelLocationList.length === 0) return [fileName, extension, sourceLine - 1, sourceLine - 1, 'Line not found']
-
-    // If this file was included then continue in the includer
-    sourceLine = labelLocationList[0].sourceLine + 1 // Skip #include line
-    fileName = labelLocationList[0].fileName
-    extension = labelLocationList[0].extension
-
-    code = await getCode(fileName, extension)
-    if (!code.length) return [fileName, extension, sourceLine - 1, sourceLine - 1, 'Line not found']
-
-    // Process includer document
-    // Need to start our search on the line after the #include
-    labelLocationList[0].sourceLine += 1
-    const result = await xxxgetOffsetMac(code, labelLocationList, offset - labelOffset - 1)
-    return result
-}
 
 
-async function getOffsetInt(labelLocationList, offset) {
+async function getOffsetInt(workspaceFolderId, labelLocationList, offset) {
 
     let startLine:number = labelLocationList[0].sourceLine
     let fileName:string = labelLocationList[0].fileName
     let extension:string = labelLocationList[0].extension
 
-    const code = await getCode(fileName, extension)
+    const code = await getCode(workspaceFolderId, fileName, extension)
     if (!code.length) return [fileName, extension, 0, 0, 'Line not found']
 
    // Zero offset

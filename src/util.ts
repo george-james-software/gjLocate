@@ -1,11 +1,21 @@
 import * as vscode from 'vscode'
 
 
+// Compare two uris.  In some cases this might need to be case insensitive
+// Only for use with file, serenji, isfs and similar uri schemes
+export function uriEqual(uri1, uri2) {
+    if (uri1.scheme !== uri2.scheme) return false
+    if (uri1.authority !== uri2.authority) return false
+    if (uri1.path !== uri2.path) return false
+    return true
+}
+
+
 // Read file and return array of code lines
-export async function getCode(fileName, extension) {
+export async function getCode(workspaceFolderId, fileName, extension) {
 
     // Open and read file
-    const fileUri = getFileUri(fileName, extension)
+    const fileUri = getFileUri(workspaceFolderId, fileName, extension)
 
     try {
         await vscode.workspace.fs.stat(fileUri)
@@ -18,7 +28,7 @@ export async function getCode(fileName, extension) {
     const code = sourceCode.split(/\r?\n/)
 
     // For vscode-objectscript remove header line if MAC, INT or INC
-    if (vscode.workspace.workspaceFolders[0].uri.scheme !=='serenji') {
+    if (vscode.workspace.workspaceFolders[workspaceFolderId].uri.scheme !=='serenji') {
         if (extension === 'mac') code.shift()
         if (extension === 'int') code.shift()
         if (extension === 'inc') code.shift()
@@ -28,9 +38,9 @@ export async function getCode(fileName, extension) {
 }
 
 
-export function getFileUri(fileName:string, extension:string):vscode.Uri {
+export function getFileUri(workspaceFolderId, fileName:string, extension:string):vscode.Uri {
 
-    const workspaceUri = vscode.workspace.workspaceFolders[0].uri
+    const workspaceUri = vscode.workspace.workspaceFolders[workspaceFolderId].uri
     const scheme = workspaceUri.scheme
 
     let fileUri:vscode.Uri

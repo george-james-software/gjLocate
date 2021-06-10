@@ -140,9 +140,6 @@ So finally, here's how you'd do it with gj&nbsp;::&nbsp;locate
 
 ## Known Limitations and Issues
 
- * If you have a multi-root workspace then gj&nbsp;::&nbsp;locate will only operate on the first folder. &nbsp;You can drag a folder to change its order and make it the first one in your workspace if you need to.
- * If you are using Serenji, gj&nbsp;::&nbsp;locate will only operate on Serenji folders that contain a single namespace. &nbsp;If you have a multi-namespace connection, you can add an additional single namespace connection and make it the first folder in your workspace. 
-
 The source location is determined using an empirical method. This approach has a number of limitations that are unlikely to be encountered in most normal cases. &nbsp;If however, you are doing something exotic, the results may be affected. &nbsp;Generally, using the Serenji extension instead of the basic InterSystems Objectscript extension will give better results because it is able to access source code that has not been downloaded to the client. 
 
  * Macro #if directives are ignored. &nbsp; Any code lines within and after a #if block may be incorrect
@@ -157,7 +154,10 @@ The source location is determined using an empirical method. This approach has a
 
 ## Release Notes
 
-### 1.0.0
+## [1.1.0] 2021-06-08
+- For a workspace with more that one root folder, gj::locate will search in the current folder if there is one or ask which folder to search in
+- Integration with InterSystems Server Manager extension
+- VS Code's Workspace Trust feature supported   
 
-First release. &nbsp;Shiney and new.
-
+## [1.0.0] 2021-04-16
+- First release. &nbsp;Shiny and new.

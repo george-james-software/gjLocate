@@ -7,16 +7,16 @@ const isMethod = /^(Method|ClassMethod)+\s([\w|%]*)/
 const isMethodEnd = /^}$/
 
 
-export async function getLabelMap(fileName, extension, labelLocationList, depth) {
-    const code = await getCode(fileName, extension)
+export async function getLabelMap(workspaceFolderId, fileName, extension, labelLocationList, depth) {
+    const code = await getCode(workspaceFolderId, fileName, extension)
     if (!code.length) return []
     
     let labelMap:{}
 
-    if (extension === 'cls') labelMap = await labelMapClass(code, fileName, extension, labelLocationList, depth)
-    else if (extension === 'mac') labelMap = await labelMapMac(code, fileName, extension, labelLocationList, depth)
-    else if (extension === 'int') labelMap = await labelMapInt(code, fileName, extension, labelLocationList, depth)
-    else if (extension === 'inc') labelMap = await labelMapInc(code, fileName, extension, labelLocationList, depth)
+    if (extension === 'cls') labelMap = await labelMapClass(workspaceFolderId, code, fileName, extension, labelLocationList, depth)
+    else if (extension === 'mac') labelMap = await labelMapMac(workspaceFolderId, code, fileName, extension, labelLocationList, depth)
+    else if (extension === 'int') labelMap = await labelMapInt(workspaceFolderId, code, fileName, extension, labelLocationList, depth)
+    else if (extension === 'inc') labelMap = await labelMapInc(workspaceFolderId, code, fileName, extension, labelLocationList, depth)
 
     // Add pseudo label ~ for entryrefs without a label
     labelMap['~'] = [ {sourceLine: -1, fileName: fileName, extension: extension} ]
@@ -25,7 +25,7 @@ export async function getLabelMap(fileName, extension, labelLocationList, depth)
 }
 
 
-async function labelMapClass(code, fileName, extension, labelLocationList, depth) {
+async function labelMapClass(workspaceFolderId, code, fileName, extension, labelLocationList, depth) {
     let labelMap = {}
 
     let inMethod:boolean = false
@@ -48,7 +48,7 @@ async function labelMapClass(code, fileName, extension, labelLocationList, depth
                 const includeFile = line.match(isHashInclude)[1].replace(/\./g, '/')
                 if ((depth ==='deep') || !includeFile.includes('%')) {
                     labelLocationList.push( {sourceLine: sourceLine + 1, fileName: fileName, extension: extension} )
-                    const includeLabelMap = await getLabelMap(includeFile, 'inc', labelLocationList, depth)
+                    const includeLabelMap = await getLabelMap(workspaceFolderId, includeFile, 'inc', labelLocationList, depth)
                     labelMap = {...labelMap, ...includeLabelMap}
                     labelLocationList.pop()
                 }
@@ -78,7 +78,7 @@ async function labelMapClass(code, fileName, extension, labelLocationList, depth
     for (let i=0; i < superClasses.length; i++) {
         const superClass = superClasses[i].split('.').join('/')
         if ((depth === 'deep') || !superClass.includes('%')) {
-            const superClassMap = await getLabelMap(superClass, 'cls', labelLocationList, depth)
+            const superClassMap = await getLabelMap(workspaceFolderId, superClass, 'cls', labelLocationList, depth)
             labelMap = {...labelMap, ...superClassMap}
         }
     }
@@ -87,7 +87,7 @@ async function labelMapClass(code, fileName, extension, labelLocationList, depth
 }
 
 
-async function labelMapMac(code, fileName, extension, labelLocationList, depth) {
+async function labelMapMac(workspaceFolderId, code, fileName, extension, labelLocationList, depth) {
  
     let labelMap = {}
 
@@ -105,7 +105,7 @@ async function labelMapMac(code, fileName, extension, labelLocationList, depth) 
             const includeFile = line.match(isHashInclude)[1]
             if ((depth ==='deep') || !includeFile.includes('%')) {
                 labelLocationList.push( {sourceLine: sourceLine + 1, fileName: fileName, extension: extension} )
-                const includeLabelMap = await getLabelMap(includeFile, 'inc', labelLocationList, depth)
+                const includeLabelMap = await getLabelMap(workspaceFolderId, includeFile, 'inc', labelLocationList, depth)
                 labelMap = {...labelMap, ...includeLabelMap}
                 labelLocationList.pop()
             }
@@ -116,7 +116,7 @@ async function labelMapMac(code, fileName, extension, labelLocationList, depth) 
 }
 
 
-async function labelMapInt(code, fileName, extension, labelLocationList, depth) {
+async function labelMapInt(workspaceFolderId, code, fileName, extension, labelLocationList, depth) {
     const labelMap = {}
 
     let label:string = ''
@@ -133,8 +133,8 @@ async function labelMapInt(code, fileName, extension, labelLocationList, depth) 
 }
 
 
-async function labelMapInc(code, fileName, extension, labelLocationList, depth) {
-    const labelMap = await labelMapMac(code, fileName, extension, labelLocationList, depth)
+async function labelMapInc(workspaceFolderId, code, fileName, extension, labelLocationList, depth) {
+    const labelMap = await labelMapMac(workspaceFolderId, code, fileName, extension, labelLocationList, depth)
     return labelMap
 }
 

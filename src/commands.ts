@@ -1,63 +1,96 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { getFileUri, removePrefix } from './util'
+import { uriEqual, getFileUri, removePrefix } from './util'
 import { decodeInput} from './decodeInput'
 import { getLabelMap } from './labelMap'
 import { getOffset } from './offset'
 
-// Tests:
-//  Current routine
-//    label
-//    +offset
-//    non-existant label
-//    +0
-//    +offset beyond end of routine
-//    label+offset
-//  Current class
-//    method
-//    +offset (not supported)
-//    non-existant method
-//    class method
-//    +0 (not supported)
-//    +offset beyond (not supported)
-//    lines containing whitespace
-//    method+offset
-//    class method+offset
-//  INT Routine
-//    ^routine
-//    label^routine
-//    label+offset^routine
-//    +offset^routine
-//  MAC Routine
-//    As for INT routine
-//    Lines containing whitespace
-//
-//  INC routine
-//  Code in Superclasses!
-// Inline code in .INC files (eg LDAP.mac includes %syLDAPfunc.inc)
-// 
-
-// If label not found in a class then check its superclasses!
-// Locate class declaration and get list of superclasses
-
-
 
 export function register(context: vscode.ExtensionContext) {
 
-    
-    let gjLocate = vscode.commands.registerCommand('gjLocate', async () => {
+    const gjLocateISM = vscode.commands.registerCommand('gjLocate.intersystems-servermanager', async (namespaceTreeItem) => {
+        const idArray = namespaceTreeItem.id.split(':')
+        const serverId = idArray[1]
+        const namespace = idArray[3]
+
+        const serenjiServerId = serverId
+        const serenjiWorkspaceUri = vscode.Uri.parse(`serenji://${serenjiServerId}/${namespace}`)
+
+        const workspaceFoldersLength = vscode.workspace.workspaceFolders.length        
+
+        // Is the workspace folder we want already open?
+        let folderId = workspaceFoldersLength
+        for (let i = 0 ; i < workspaceFoldersLength ; i++) {
+            const uri = vscode.workspace.workspaceFolders[i].uri
+            if (uriEqual(uri, serenjiWorkspaceUri)) {
+                folderId = i
+                break
+            }
+        }
+
+        // If no matching folder then add a new namespace specific one at the end
+        // Can't add it at the beginning because it causes VS Code to reload the extension
+        if (folderId === workspaceFoldersLength) {
+            const name = `Serenji: ${serverId} ${namespace}`        
+            const ok = vscode.workspace.updateWorkspaceFolders(folderId, 0, {uri: serenjiWorkspaceUri, name: name})
+        }
+
+        // Set focus to the workspace folder
+        await vscode.commands.executeCommand('workbench.view.explorer')
+        await vscode.commands.executeCommand('workbench.explorer.fileView.focus')
+
+        // Invoke gjLocate
+        vscode.commands.executeCommand('gjLocate', folderId)
+    })
+
+    context.subscriptions.push(gjLocateISM) 
+
+
+    let gjLocate = vscode.commands.registerCommand('gjLocate', async (workspaceFolderId = -1) => {
 
         // If there are no workspaces open then do nothing
         if (!vscode.workspace.workspaceFolders) return
 
+        // If no workspace folder provided then try to find one
+        if (workspaceFolderId === -1) {
+            const workspaceFoldersLength = vscode.workspace.workspaceFolders.length
+
+            // If only one workspace then that's the one
+                if (workspaceFoldersLength === 1) workspaceFolderId = 0
+            else {
+
+                // If there's an active document then find it's workspace and use that
+                if (vscode.window.activeTextEditor) {
+                    const currentUri = vscode.window.activeTextEditor.document.uri
+                    if (currentUri.scheme !== 'output') {
+
+                        const currentFolderUri = currentUri.with({path: '/' + currentUri.path.split('/').slice(1,2).join('/')})
+                        for (let i = 0 ; i < workspaceFoldersLength ; i++) {
+                            const uri = vscode.workspace.workspaceFolders[i].uri
+                            if (uriEqual(uri, currentFolderUri)) {
+                                workspaceFolderId = i
+                                break
+                            }
+                        }           
+                    }
+                }            
+            
+                // If no active document or didn't find it then ask the user
+                if (workspaceFolderId === -1) {
+                    const workspacePick = await pickWorkspaceFolder()
+                    if (!workspacePick) return
+
+                    workspaceFolderId = workspacePick.id
+                }
+            }
+        }
+
         // The workspace root uri
-        // For a multi-rooted workspace assume first root
-        const workspaceUri = vscode.workspace.workspaceFolders[0].uri
+        const workspaceUri = vscode.workspace.workspaceFolders[workspaceFolderId].uri
 
         // Get the worspace scheme.  It may be serenji, isfs, isfs-readonly or file
         const scheme = workspaceUri.scheme
-
     
         // Read from clipboard
         const clipboard = await vscode.env.clipboard.readText()
@@ -72,7 +105,7 @@ export function register(context: vscode.ExtensionContext) {
             userInput = await vscode.window.showInputBox({
                 prompt: 'Enter method+offset^Package.Class or label+offset^routine to go to the source', 
                 placeHolder: '',
-                ignoreFocusOut: true,
+                ignoreFocusOut: false,
                 value: defaultValue
             })
         }
@@ -132,7 +165,7 @@ export function register(context: vscode.ExtensionContext) {
 
         // Check class exists
         if (entryref.extension === 'cls') {
-            const clsUri = getFileUri(entryref.className, 'cls')
+            const clsUri = getFileUri(workspaceFolderId, entryref.className, 'cls')
             try {
                 await vscode.workspace.fs.stat(clsUri)
             } 
@@ -144,10 +177,10 @@ export function register(context: vscode.ExtensionContext) {
 
         // cls or mac or int or inc
         if (entryref.extension === '') {
-            const clsUri = getFileUri(entryref.routine, 'cls')
-            const macUri = getFileUri(entryref.routine, 'mac')
-            const intUri = getFileUri(entryref.routine, 'int')
-            const incUri = getFileUri(entryref.routine, 'inc')
+            const clsUri = getFileUri(workspaceFolderId, entryref.routine, 'cls')
+            const macUri = getFileUri(workspaceFolderId, entryref.routine, 'mac')
+            const intUri = getFileUri(workspaceFolderId, entryref.routine, 'int')
+            const incUri = getFileUri(workspaceFolderId, entryref.routine, 'inc')
             try {
                 await vscode.workspace.fs.stat(clsUri)
                 entryref.extension = 'cls'
@@ -179,15 +212,15 @@ export function register(context: vscode.ExtensionContext) {
 
         // Build a label map
         let labelMap:{}
-        if (entryref.extension === 'cls') labelMap = await getLabelMap(entryref.className, 'cls', [], 'shallow')
-        else labelMap = await getLabelMap(entryref.routine, entryref.extension, [], 'shallow')
+        if (entryref.extension === 'cls') labelMap = await getLabelMap(workspaceFolderId, entryref.className, 'cls', [], 'shallow')
+        else labelMap = await getLabelMap(workspaceFolderId, entryref.routine, entryref.extension, [], 'shallow')
 
         // Does label exist?
         if (labelMap[entryref.label] === undefined) {
 
             // Label not found so use deep search to create more extensive labelMap
-            if (entryref.extension === 'cls') labelMap = await getLabelMap(entryref.className, 'cls', [], 'deep')
-            else labelMap = await getLabelMap(entryref.routine, entryref.extension, [], 'deep')
+            if (entryref.extension === 'cls') labelMap = await getLabelMap(workspaceFolderId, entryref.className, 'cls', [], 'deep')
+            else labelMap = await getLabelMap(workspaceFolderId, entryref.routine, entryref.extension, [], 'deep')
 
             if (labelMap[entryref.label] === undefined) {
                 vscode.window.showErrorMessage('Label ' + entryref.label + ' not found in ' + entryref.displayName() )
@@ -202,7 +235,7 @@ export function register(context: vscode.ExtensionContext) {
 
         // Locate line numbers of the corresponding source code
         const labelLocationList = labelMap[entryref.label]
-        const location = await getOffset(labelLocationList, entryref.offset)
+        const location = await getOffset(workspaceFolderId, labelLocationList, entryref.offset)
         const [fileName, extension, startLineNumber, endLineNumber, error] = location
 
         if (error !== '') {
@@ -211,8 +244,7 @@ export function register(context: vscode.ExtensionContext) {
 
 
         // Open the file in the vscode workspace so the user can see it
-        const fileUri = getFileUri(fileName, extension)
-
+        const fileUri = getFileUri(workspaceFolderId, fileName, extension)
         await vscode.commands.executeCommand('vscode.open', fileUri)
         await vscode.workspace.openTextDocument(fileUri)
 
@@ -236,6 +268,33 @@ export function register(context: vscode.ExtensionContext) {
 
 }
 
+
+class workspaceItem implements vscode.QuickPickItem {
+    label:string
+    id:number
+
+    constructor (id:number, label:string) {
+        this.id = id
+        this.label = label
+    }
+}
+
+
+// Pick a workspace top-level folder
+async function pickWorkspaceFolder() {
+
+    const pickList:workspaceItem[] = []
+
+    for (let i = 0; i < vscode.workspace.workspaceFolders.length; i++) {
+        const name = vscode.workspace.workspaceFolders[i].name 
+        const uri = vscode.workspace.workspaceFolders[i].uri
+        pickList.push(new workspaceItem(i, name))
+    }
+
+    const workspacePick = await vscode.window.showQuickPick(pickList,{ignoreFocusOut:false, placeHolder: 'Locate in which folder?'})
+
+    return workspacePick
+}
 
 
 // If clipboard content looks anything like an entryref or error reference then we'll use it 

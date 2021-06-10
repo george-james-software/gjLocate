@@ -1,12 +1,20 @@
 {
   "name": "gjlocate",
   "displayName": "gj :: locate",
-  "description": "Go to InterSystems source code location",
-  "version": "1.0.1",
+  "description": "Go to InterSystems ObjectScript source code location",
+  "version": "1.1.0",
   "publisher": "georgejames",
   "homepage": "https://github.com/george-james-software/gjLocate/README.md",
   "bugs": "https://github.com/george-james-software/gjLocate/issues",
   "license": "GPL-3.0-or-later",
+  
+  "keywords": [
+    "intersystems",
+    "objectscript",
+    "georgejames",
+    "serenji"
+  ],
+
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -24,6 +32,72 @@
       {
         "command": "gjLocate",
         "title": "gj::locate - Go to Location"
+      },
+      {
+        "command": "gjLocate.intersystems-servermanager",
+        "title": "gj::locate - Go to Location",
+        "icon": "$(arrow-right)"
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "gjLocate.intersystems-servermanager",
+          "when": "view == intersystems-community_servermanager && viewItem =~ /namespace$/",
+          "group": "inline@5"        
+        }
+      ]
+    },    
+  "languages": [
+      {
+        "id": "serenji.mac",
+        "aliases": [ "ObjectScript - Serenji" ],
+        "extensions": [ ".mac" ]
+      },
+      {
+        "id": "serenji.int",
+        "aliases": [ "ObjectScript - Serenji" ],
+        "extensions": [ ".int" ]
+      },
+      {
+        "id": "serenji.cls",
+        "aliases": [ "ObjectScript Class - Serenji" ],
+        "extensions": [ ".cls" ]
+      },
+      {
+        "id": "serenji.inc",
+        "aliases": [ "ObjectScript Include - Serenji" ],
+        "extensions": [ ".inc" ]
+      },
+      {
+        "id": "serenji.csp",
+        "aliases": [ "ObjectScript CSP - Serenji" ],
+        "extensions": [ ",csp" ]
+      },
+      {
+        "id": "serenji.csr",
+        "aliases": [ "ObjectScript CSR - Serenji" ],
+        "extensions": [ ".csr" ]
+      },
+      {
+        "id": "objectscript",
+        "aliases": [ "ObjectScript" ],
+        "extensions": [ ".mac", ".int" ]
+      },
+      {
+        "id": "objectscript-class",
+        "aliases": [ "ObjectScript Class" ],
+        "extensions": [ ".cls" ]
+      },
+      {
+        "id": "objectscript-macros",
+        "aliases": [ "ObjectScript Include" ],
+        "extensions": [ ".inc" ]
+      },
+      {
+        "id": "objectscript-csp",
+        "aliases": [ "ObjectScript CSP" ],
+        "extensions": [ ".csp", ".csr" ]
       }
     ]
   },
@@ -48,5 +122,11 @@
 
   },
   "dependencies": {
-  }
+  },
+
+  "capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	}
 }
