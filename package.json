@@ -53,59 +53,7 @@
           "when": "false"
         }
       ]
-    },    
-  "languages": [
-      {
-        "id": "serenji.mac",
-        "aliases": [ "ObjectScript - Serenji" ],
-        "extensions": [ ".mac" ]
-      },
-      {
-        "id": "serenji.int",
-        "aliases": [ "ObjectScript - Serenji" ],
-        "extensions": [ ".int" ]
-      },
-      {
-        "id": "serenji.cls",
-        "aliases": [ "ObjectScript Class - Serenji" ],
-        "extensions": [ ".cls" ]
-      },
-      {
-        "id": "serenji.inc",
-        "aliases": [ "ObjectScript Include - Serenji" ],
-        "extensions": [ ".inc" ]
-      },
-      {
-        "id": "serenji.csp",
-        "aliases": [ "ObjectScript CSP - Serenji" ],
-        "extensions": [ ",csp" ]
-      },
-      {
-        "id": "serenji.csr",
-        "aliases": [ "ObjectScript CSR - Serenji" ],
-        "extensions": [ ".csr" ]
-      },
-      {
-        "id": "objectscript",
-        "aliases": [ "ObjectScript" ],
-        "extensions": [ ".mac", ".int" ]
-      },
-      {
-        "id": "objectscript-class",
-        "aliases": [ "ObjectScript Class" ],
-        "extensions": [ ".cls" ]
-      },
-      {
-        "id": "objectscript-macros",
-        "aliases": [ "ObjectScript Include" ],
-        "extensions": [ ".inc" ]
-      },
-      {
-        "id": "objectscript-csp",
-        "aliases": [ "ObjectScript CSP" ],
-        "extensions": [ ".csp", ".csr" ]
-      }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
