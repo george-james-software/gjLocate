@@ -80,8 +80,9 @@ Surely it can't be that difficult to get from `label+offset^routine` to the actu
 
 Take, for example, the following error message:
 ```objectscript
-    set characterCount = characterCount + 1
-    <UNDEFINED>zeta+5^Greek.Alphabet.1 *characterCount
+ set characterCount = characterCount + 1
+ ^
+<UNDEFINED>zeta+5^Greek.Alphabet.1 *characterCount
 ```
 
 It's 2:30am and you've just been woken up to fix a mission critical problem in your Greek Alphabet application. &nbsp;How do you find the corresponding source code line for this error?
