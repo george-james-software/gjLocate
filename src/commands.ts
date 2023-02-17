@@ -165,7 +165,7 @@ export function register(context: vscode.ExtensionContext) {
 
         // Check class exists
         if (entryref.extension === 'cls') {
-            const clsUri = getFileUri(workspaceFolderId, entryref.className, 'cls')
+            const clsUri = await getFileUri(workspaceFolderId, entryref.className, 'cls')
             try {
                 await vscode.workspace.fs.stat(clsUri)
             } 
@@ -177,10 +177,10 @@ export function register(context: vscode.ExtensionContext) {
 
         // cls or mac or int or inc
         if (entryref.extension === '') {
-            const clsUri = getFileUri(workspaceFolderId, entryref.routine, 'cls')
-            const macUri = getFileUri(workspaceFolderId, entryref.routine, 'mac')
-            const intUri = getFileUri(workspaceFolderId, entryref.routine, 'int')
-            const incUri = getFileUri(workspaceFolderId, entryref.routine, 'inc')
+            const clsUri = await getFileUri(workspaceFolderId, entryref.routine, 'cls')
+            const macUri = await getFileUri(workspaceFolderId, entryref.routine, 'mac')
+            const intUri = await getFileUri(workspaceFolderId, entryref.routine, 'int')
+            const incUri = await getFileUri(workspaceFolderId, entryref.routine, 'inc')
             try {
                 await vscode.workspace.fs.stat(clsUri)
                 entryref.extension = 'cls'
@@ -244,7 +244,7 @@ export function register(context: vscode.ExtensionContext) {
 
 
         // Open the file in the vscode workspace so the user can see it
-        const fileUri = getFileUri(workspaceFolderId, fileName, extension)
+        const fileUri = await getFileUri(workspaceFolderId, fileName, extension)
         await vscode.commands.executeCommand('vscode.open', fileUri)
         await vscode.workspace.openTextDocument(fileUri)
 

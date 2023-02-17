@@ -15,7 +15,7 @@ export function uriEqual(uri1, uri2) {
 export async function getCode(workspaceFolderId, fileName, extension) {
 
     // Open and read file
-    const fileUri = getFileUri(workspaceFolderId, fileName, extension)
+    const fileUri = await getFileUri(workspaceFolderId, fileName, extension)
 
     try {
         await vscode.workspace.fs.stat(fileUri)
@@ -38,17 +38,40 @@ export async function getCode(workspaceFolderId, fileName, extension) {
 }
 
 
-export function getFileUri(workspaceFolderId, fileName:string, extension:string):vscode.Uri {
+export async function getFileUri(workspaceFolderId, fileName:string, extension:string): Promise<vscode.Uri> {
 
     const workspaceUri = vscode.workspace.workspaceFolders[workspaceFolderId].uri
     const scheme = workspaceUri.scheme
 
     let fileUri:vscode.Uri
-    if (scheme === 'serenji') fileUri = workspaceUri.with({path: workspaceUri.path + '/' + fileName + '.' + extension})
-    else if (scheme === 'isfs') fileUri = workspaceUri.with({path: workspaceUri.path + fileName + '.' + extension})
-    else if (scheme === 'isfs-readonly') fileUri = workspaceUri.with({path: workspaceUri.path + fileName + '.' + extension})
-    else fileUri = workspaceUri.with({path: workspaceUri.path + '/src/' + fileName + '.' + extension})
-
+    if (scheme === 'serenji' || scheme === 'serenji-readonly') fileUri = workspaceUri.with({path: workspaceUri.path + '/' + fileName + '.' + extension})
+    else if (scheme === 'isfs' || scheme === 'isfs-readonly') fileUri = workspaceUri.with({path: workspaceUri.path + fileName + '.' + extension})
+    else {
+        fileUri = workspaceUri.with({path: workspaceUri.path + '/src/' + fileName + '.' + extension})
+        if (scheme === 'file') {
+            try {
+                await vscode.workspace.fs.stat(fileUri)
+            } catch {
+                // Handle case of client-side editing with InterSystems ObjectScript extension (https://github.com/george-james-software/gjLocate/issues/3)
+                const objectScriptExtension = vscode.extensions.getExtension('intersystems-community.vscode-objectscript')
+                if (objectScriptExtension?.isActive) {
+                    try {
+                        // Ask that extension where to find the file on the server (we already checked above that there isn't a local copy)
+                        fileUri = objectScriptExtension.exports.getUriForDocument(fileName.replace(/\//, '.') + '.' + extension)
+                        if (fileUri.scheme === 'objectscript') {
+                            // Switch to a FileSystemProvider scheme ('objectscript' is a TextDocumentContentProvider scheme)
+                            fileUri = fileUri.with({ scheme: 'isfs-readonly' })
+                        }
+                        if (['isfs', 'isfs-readonly'].includes(fileUri.scheme)) {
+                            // Do this to force the FSP to set up its intermediate directory structures,
+                            // otherwise a subsequent fs.stat() will fail
+                            await vscode.workspace.fs.readFile(fileUri)
+                        }
+                    } catch {}
+                }
+            }
+        }
+    }
     return fileUri
 }
 
