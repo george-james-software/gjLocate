@@ -60,10 +60,11 @@ export async function getFileUri(workspaceFolderId, fileName:string, extension:s
                         fileUri = objectScriptExtension.exports.getUriForDocument(fileName.replace(/\//, '.') + '.' + extension)
                         if (fileUri.scheme === 'objectscript') {
                             // Switch to a FileSystemProvider scheme ('objectscript' is a TextDocumentContentProvider scheme)
-                            // Also discard query.
-                            fileUri = fileUri.with({ scheme: 'isfs-readonly', query: '' })
+                            fileUri = fileUri.with({ scheme: 'isfs-readonly' })
                         }
                         if (['isfs', 'isfs-readonly'].includes(fileUri.scheme)) {
+                            // Discard query.
+                            fileUri = fileUri.with({ query: '' })
                             // Do this to force the FSP to set up its intermediate directory structures,
                             // otherwise a subsequent fs.stat() will fail
                             await vscode.workspace.fs.readFile(fileUri)
