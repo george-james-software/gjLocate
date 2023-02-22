@@ -60,7 +60,8 @@ export async function getFileUri(workspaceFolderId, fileName:string, extension:s
                         fileUri = objectScriptExtension.exports.getUriForDocument(fileName.replace(/\//, '.') + '.' + extension)
                         if (fileUri.scheme === 'objectscript') {
                             // Switch to a FileSystemProvider scheme ('objectscript' is a TextDocumentContentProvider scheme)
-                            fileUri = fileUri.with({ scheme: 'isfs-readonly' })
+                            // Also discard query.
+                            fileUri = fileUri.with({ scheme: 'isfs-readonly', query: '' })
                         }
                         if (['isfs', 'isfs-readonly'].includes(fileUri.scheme)) {
                             // Do this to force the FSP to set up its intermediate directory structures,

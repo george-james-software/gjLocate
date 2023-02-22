@@ -170,7 +170,7 @@ export function register(context: vscode.ExtensionContext) {
                 await vscode.workspace.fs.stat(clsUri)
             } 
             catch {
-                vscode.window.showInformationMessage(`Class ${ entryref.displayName() } not found`)
+                vscode.window.showInformationMessage(`Class ${ entryref.displayName() } not found at ${clsUri.toString(true)}`)
                 return
             }
         }
