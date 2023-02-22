@@ -57,14 +57,12 @@ export async function getFileUri(workspaceFolderId, fileName:string, extension:s
                 if (objectScriptExtension?.isActive) {
                     try {
                         // Ask that extension where to find the file on the server (we already checked above that there isn't a local copy)
-                        fileUri = objectScriptExtension.exports.getUriForDocument(fileName.replace(/\//, '.') + '.' + extension)
+                        fileUri = objectScriptExtension.exports.getUriForDocument(fileName.replace(/\//g, '.') + '.' + extension)
                         if (fileUri.scheme === 'objectscript') {
                             // Switch to a FileSystemProvider scheme ('objectscript' is a TextDocumentContentProvider scheme)
                             fileUri = fileUri.with({ scheme: 'isfs-readonly' })
                         }
                         if (['isfs', 'isfs-readonly'].includes(fileUri.scheme)) {
-                            // Discard query.
-                            fileUri = fileUri.with({ query: '' })
                             // Do this to force the FSP to set up its intermediate directory structures,
                             // otherwise a subsequent fs.stat() will fail
                             await vscode.workspace.fs.readFile(fileUri)
