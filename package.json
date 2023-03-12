@@ -24,7 +24,18 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage:serenji.int",
+    "onLanguage:serenji.csp",
+    "onLanguage:serenji.csr",
+    "onLanguage:serenji.mac",
+    "onLanguage:serenji.cls",
+    "onLanguage:serenji.inc",
+    "onLanguage:serenji.int",
+    "onLanguage:objectscript",
+    "onLanguage:objectscript-class",
+    "onLanguage:objectscript-csp",
+    "onLanguage:objectscript-macros",
+    "onLanguage:objectscript-int"
   ],
   "main": "./out/main",
   "contributes": {
