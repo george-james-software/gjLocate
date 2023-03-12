@@ -105,7 +105,7 @@ export function register(context: vscode.ExtensionContext) {
             userInput = await vscode.window.showInputBox({
                 prompt: 'Enter method+offset^Package.Class or label+offset^routine to go to the source', 
                 placeHolder: '',
-                ignoreFocusOut: false,
+                ignoreFocusOut: true,
                 value: defaultValue
             })
         }
@@ -291,7 +291,13 @@ async function pickWorkspaceFolder() {
         pickList.push(new workspaceItem(i, name))
     }
 
-    const workspacePick = await vscode.window.showQuickPick(pickList,{ignoreFocusOut:false, placeHolder: 'Locate in which folder?'})
+    const workspacePick = await vscode.window.showQuickPick(
+        pickList,
+        {
+            ignoreFocusOut:true, 
+            placeHolder: 'Locate in which folder?'
+        }
+    )
 
     return workspacePick
 }
