@@ -24,7 +24,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:serenji.int",
     "onLanguage:serenji.csp",
     "onLanguage:serenji.csr",
     "onLanguage:serenji.mac",
